@@ -1,64 +1,57 @@
-const express = require('express')
-const cors = require('cors')
+const { startApp } = require(`./configs/basic`)
+const { sql } = require(`./configs/database`)
+const app = startApp()
+const { getCategories, createNewCategory, getOneCategories,
+  updateCategories, deleteCategories } = require("./services/categoryService")
 const fs = require('fs')
-const app = express()
-const port = 4000
-app.use(cors())
-app.use(express.json())
-const content = fs.readFileSync('categories.json', "utf-8")
-console.log({ content })
+const content = fs.readFileSync('data/categories.json', "utf-8")
 let categories = JSON.parse(content)
 
 app.get("/categories", (req, res) => {
+  const categories = getCategories()
   res.json(categories)
 })
 
-// app.get("/categories/:id", (req, res) => {
-//   const {id}=req.params
-//   const category=categories.find(cat.id === id)
-//   res.json(category)
-// })
+app.get("/categories/:id", async (req, res) => {
+  const { id } = req.params
+  await getOneCategories(id)
+  res.json(category)
+})
 
-app.post("/categories", (req, res) => {
+app.post("/categories", async (req, res) => {
   const { name } = req.body
-  categories.push({ name: name, id: new Date().toISOString() })
-  fs.writeFileSync('categories.json', JSON.stringify(categories))
-
+  await createNewCategory(name)
   res.json("success")
 })
 
-app.put("/categories/:id", (req, res) => {
-  const {id}=req.params
-  const {newName } = req.body; // Getting the old name and new name from the query parameters
+app.put("/categories/:id", async (req, res) => {
+  const { id } = req.params
+  const { newName } = req.body;
+  const index = categories.findIndex(category => category.id === id);
 
-  // console.log({ id, newName })
-
-  const index = categories.findIndex(category => category.id === id); // Finding the category with the old name
-
-  if (index !== -1) { // If the category exists
-    categories[index].name = newName; // Update its name
-    fs.writeFileSync('categories.json', JSON.stringify(categories)); // Save the updated list back to the file
-    res.json("Category updated successfully"); // Send a success message
+  if (index !== -1) {
+    await updateCategories(index, newName)
+    res.json("Category updated successfully");
   } else {
-    res.status(404).json("Category not found"); // If the category doesn't exist, send a 404 error
-  }
-
-})
-
-app.delete("/categories/:id", (req, res) => {
-  const {id}=req.params // Getting the id of the category to delete from the query parameters
-
-  const index = categories.findIndex(category => category.id === id); // Finding the category by its name
-
-  if (index !== -1) { // If the category exists
-    categories.splice(index, 1); // Remove it from the list
-    fs.writeFileSync('categories.json', JSON.stringify(categories)); // Save the updated list back to the file
-    res.json("Category deleted successfully"); // Send a success message
-  } else {
-    res.status(404).json("Category not found"); // If the category doesn't exist, send a 404 error
+    res.status(404).json("Category not found");
   }
 })
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})  
+app.delete("/categories/:id", async (req, res) => {
+  const { id } = req.params
+  const index = categories.findIndex(category => category.id === id);
+
+  if (index !== -1) {
+    await deleteCategories(index)
+    res.json("Category deleted successfully");
+  } else {
+    res.status(404).json("Category not found");
+  }
+})
+
+app.get("/databaseTest",async (req, res) => {
+  const result = await sql`select version()`;
+  console.log(result);
+  res.json({result})
+})
+
