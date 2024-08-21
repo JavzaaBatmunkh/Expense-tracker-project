@@ -1,14 +1,15 @@
 const { startApp } = require(`./configs/basic`)
 const { sql } = require(`./configs/database`)
 const app = startApp()
-const { getCategories, createNewCategory, getOneCategories,
-  updateCategories, deleteCategories } = require("./services/categoryService")
+const { getCategories, createNewCategory } = require("./services/categoryService")
+// , getOneCategories,
+//   updateCategories, deleteCategories
 const fs = require('fs')
 const content = fs.readFileSync('data/categories.json', "utf-8")
 let categories = JSON.parse(content)
 
-app.get("/categories", (req, res) => {
-  const categories = getCategories()
+app.get("/categories", async (req, res) => {
+  const categories = await getCategories()
   res.json(categories)
 })
 
