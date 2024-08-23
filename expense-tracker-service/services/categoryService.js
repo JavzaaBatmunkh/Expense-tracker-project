@@ -1,4 +1,3 @@
-const fs = require('fs')
 const { v4: uuidv4 } = require('uuid');
 const { sql } = require(`../configs/database`);
 
@@ -19,9 +18,8 @@ async function getOneCategories(id) {
   console.log({ list })
   return list;
 }
-async function updateCategories(id, input) {
-  const list= await sql`update categories set name=${input.name} where id=${id}`
-  return list;
+async function updateCategories(id, newName) {
+  await sql`update categories set name=${newName} where id=${id}` 
 }
 async function deleteCategories(id) {
   await sql`delete from categories where id=${id}`;

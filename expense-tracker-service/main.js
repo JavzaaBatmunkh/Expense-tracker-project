@@ -4,10 +4,6 @@ const app = startApp()
 const { getCategories, createNewCategory, getOneCategories,
   updateCategories, deleteCategories } = require("./services/categoryService")
 
-const fs = require('fs')
-const content = fs.readFileSync('data/categories.json', "utf-8")
-let categories = JSON.parse(content)
-
 app.get("/categories", async (req, res) => {
   const categories = await getCategories()
   res.json(categories)
@@ -30,8 +26,8 @@ app.post("/categories", async (req, res) => {
 
 app.put("/categories/:id", async (req, res) => {
   const { id } = req.params
-  const { input } = req.body;
-  const list = await updateCategories(id, input)
+  const { newName } = req.body;
+  const list = await updateCategories(id, newName)
   res.status(201).json({list})
 })
 
