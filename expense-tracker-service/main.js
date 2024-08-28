@@ -19,15 +19,14 @@ app.get("/categories/:id", async (req, res) => {
 })
 
 app.post("/categories", async (req, res) => {
-  const { name } = req.body
-  const list= await createNewCategory(name)
+  const list= await createNewCategory(req.body)
   res.json(list)
 })
 
 app.put("/categories/:id", async (req, res) => {
   const { id } = req.params
-  const { newName } = req.body;
-  const list = await updateCategories(id, newName)
+  // const { newName } = req.body;
+  const list = await updateCategories(id, req.body)
   res.status(201).json({list})
 })
 

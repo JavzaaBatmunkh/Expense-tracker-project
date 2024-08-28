@@ -15,9 +15,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
-import { Check, BadgeDollarSign, Bath, Bus, CarFront, ChartCandlestick, Cherry, Drama, FerrisWheel, Fuel, GraduationCap, HandCoins, Hospital, House, IceCreamCone, Laptop, Plane, Shirt, ShoppingCart, SmartphoneNfc, TentTree, TramFront, Utensils } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+
+import { Check, BadgeDollarSign, Bath, Bus, CarFront, ChartCandlestick, Cherry, Drama, FerrisWheel, Fuel, GraduationCap, HandCoins, Hospital, House, IceCreamCone, Laptop, Plane, Shirt, ShoppingCart, SmartphoneNfc, TentTree, TramFront, Utensils, Square } from "lucide-react";
 const categoryIcons = [
   { value: "transportation", path: <Bus /> },
   { value: "ferriswheel", path: <FerrisWheel /> },
@@ -29,11 +41,11 @@ const categoryIcons = [
   { value: "ice-cream", path: <IceCreamCone /> },
   { value: "car", path: <CarFront /> },
   { value: "shopping", path: <ShoppingCart /> },
-  { value: "shopping", path: <Shirt /> },
-  { value: "shopping", path: <BadgeDollarSign /> },
-  { value: "shopping", path: <Fuel /> },
-  { value: "shopping", path: <Plane /> },
-  { value: "shopping", path: <TramFront /> },
+  { value: "shirt", path: <Shirt /> },
+  { value: "dollar", path: <BadgeDollarSign /> },
+  { value: "fuel", path: <Fuel /> },
+  { value: "plane", path: <Plane /> },
+  { value: "train", path: <TramFront /> },
   { value: "bathroom", path: <Bath /> },
   { value: "coins", path: <HandCoins /> },
   { value: "tent", path: <TentTree /> },
@@ -42,14 +54,14 @@ const categoryIcons = [
   { value: "hospital", path: <Hospital /> }
 ]
 const categoryColors = [{ name: "blue", value: "#0166FF" }, { name: "light-blue", value: "#01B3FF" },
-{ name: "green", value: "#41CC00" }, { name: "yellow", value: "#F9D100" }, { name: "orange", value: "#FF7B01" },
-{ name: "purple", value: "#AE01FF" }, { name: "red", value: "#FF0101" },]
+{ name: "green", value: "#41CC00" }, { name: "yellow", value: "#F9D100" }, { name: "orange", value: "#FF7B01" }, { name: "purple", value: "#AE01FF" }, { name: "red", value: "#FF0101" },]
 
 export default function Home() {
   const [categories, setCategories] = useState([])
   const [open, setOpen] = useState(false)
   const [icon, setIcon] = useState("")
   const [color, setColor] = useState("")
+  const [newCategory, setNewCategory] = useState("")
 
   function loadList() {
     fetch("http://localhost:4000/categories")
@@ -62,11 +74,12 @@ export default function Home() {
   }, [])
 
   function createNew() {
-    const name = prompt("Name...")
+    // const name = prompt("Name...")
     fetch(`http://localhost:4000/categories`,
       {
         method: "POST",
-        body: JSON.stringify({ name: name, 
+        body: JSON.stringify({
+          name: newCategory,
           color: color,
           icon: icon
         }),
@@ -74,7 +87,11 @@ export default function Home() {
       }
     )
       .then(res => res.json())
-      .then((data) => { loadList() })
+      .then((data) => {
+        loadList();
+        setOpen(false);
+      })
+
   }
 
   function deleteCategory(id) {
@@ -97,7 +114,7 @@ export default function Home() {
       fetch(`http://localhost:4000/categories/${id}`,
         {
           method: "PUT",
-          body: JSON.stringify({ id: id, newName: newName }),
+          body: JSON.stringify({ id: id, newName: newName, color: color, icon: icon }),
           headers: { "Content-type": "application/json; charset=UTF-8" }
         }
       )
@@ -106,10 +123,69 @@ export default function Home() {
     }
     else { }
   }
+  const handleInputChangeCategory = (event) => {
+    setNewCategory(event.target.value)
+  }
+
+  const date = new Date()
+  console.log(date);
 
   return (
     <main >
-      <Button onClick={createNew} >Add new</Button>
+      <Button onClick={createNew} >+ Add New Record</Button>
+      <Dialog>
+        <DialogTrigger>Open</DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Record</DialogTitle>
+            <hr />
+            <DialogDescription className="grid grid-cols-2">
+              <div>
+                <Tabs defaultValue="account" className="w-full ">
+                  <TabsList className="w-full rounded-full">
+                    <TabsTrigger value="account" className="w-[50%] rounded-full">Expense</TabsTrigger>
+                    <TabsTrigger value="password" className="w-[50%] rounded-full">Income</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="account">
+                    <p className="text-left">Amount</p>
+                    <Input className="" placeholder="$000.00" />
+                    Category
+                    <Select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Find or choose category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem value={category.name} key={category.id}>{category.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                  </TabsContent>
+                  <TabsContent value="password">Change your password here.</TabsContent>
+                </Tabs>
+              </div>
+              <div>
+                
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Label htmlFor="email">Payee</Label>
+                  <Input type="email" id="email" placeholder="Write here" />
+                </div>
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Label htmlFor="email">Note</Label>
+                  <Textarea placeholder="Write here" />
+                </div>
+                
+
+
+              </div>
+
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+
       {categories.map((category) => (
         <div key={category.id} className="flex gap-2">
           {category.name}
@@ -118,7 +194,7 @@ export default function Home() {
         </div>
       ))}
 
-      <Button onClick={() => setOpen(true)} variant="outline" >Add New Category</Button>
+      <Button onClick={() => setOpen(true)} variant="outline" >+ Add New Category</Button>
       <Dialog open={open}>
         <DialogContent>
           <DialogHeader>
@@ -129,12 +205,16 @@ export default function Home() {
                 <PopoverTrigger><House /></PopoverTrigger>
                 <PopoverContent >
                   <div className="grid grid-cols-4 gap-2">
-                    {categoryIcons.map(icon =>
-                      <div value={icon.value} key={icon.value} onClick={() => setIcon(icon.value)}>{icon.path} </div>)}
+                    {categoryIcons.map(({ value, path }) =>
+                      <div className={`relative w-8 h-8 flex justify-center items-center rounded-lg
+                      ${icon === value ? "bg-blue-300 border-blue-950" : ""}`} value={value} key={value}
+                        onClick={() => setIcon(value)}>
+                        {path}
+                      </div>)}
                   </div>
                   <hr className="my-4" />
                   <div className="flex gap-1">
-                    {categoryColors.map(({name,value}) =>
+                    {categoryColors.map(({ name, value }) =>
                       <div key={name} className="rounded-full h-8 w-8 flex justify-center items-center" style={{ background: value }}
                         onClick={() => setColor(name)}>
                         {color === name && <Check className="text-white w-4" />}
@@ -142,7 +222,7 @@ export default function Home() {
                   </div>
                 </PopoverContent>
               </Popover>
-              <Input placeholder="Name" />
+              <Input placeholder="Name" type="text" onChange={handleInputChangeCategory} value={newCategory} />
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

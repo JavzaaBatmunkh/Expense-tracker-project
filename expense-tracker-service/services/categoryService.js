@@ -7,7 +7,8 @@ async function getCategories() {
   return list;
 }
 
-async function createNewCategory(name, color, icon) {
+async function createNewCategory({name, color, icon}) {
+  console.log({name, color, icon})
   const id = uuidv4()
   await sql`INSERT INTO categories (id, name, color, icon) VALUES(${id}, ${name}, ${color}, ${icon} )`
   return id;
