@@ -1,5 +1,4 @@
 const { startApp } = require(`./configs/basic`)
-const { sql } = require(`./configs/database`)
 const app = startApp()
 const { getCategories, createNewCategory, getOneCategories,
   updateCategories, deleteCategories } = require("./services/categoryService")
