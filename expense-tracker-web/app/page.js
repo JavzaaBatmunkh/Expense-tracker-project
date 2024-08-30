@@ -63,21 +63,19 @@ export default function Home() {
   const [icon, setIcon] = useState("home")
   const [color, setColor] = useState("blue")
   const [newCategory, setNewCategory] = useState("")
-  const [loading, setLoading]=useState(false)
-
-
-  useEffect(() => {
-    if (open === true){
-      setColor("blue")
-    }
-
-  }, [open]);
-
+  const [loading, setLoading] = useState(false)
+  const [editingCategory, setEditingCategory] = useState()
 
   function loadList() {
     fetch("http://localhost:4000/categories")
       .then(res => res.json())
       .then((data) => { setCategories(data) })
+  }
+
+  function reset(){
+    setColor("blue");
+    setIcon("home");
+    setNewCategory("")
   }
 
   useEffect(() => {
@@ -96,12 +94,12 @@ export default function Home() {
         }),
         headers: { "Content-type": "application/json; charset=UTF-8" }
       })
-      .then(res => res.json())
-      .then((data) => {
+      .then(() => {
         loadList();
         setLoading(false)
         setOpen(false);
         toast("Category has been created successfully.")
+        reset()
       })
   }
 
@@ -118,75 +116,96 @@ export default function Home() {
     else { }
   }
 
-  function updateCategory(id, name) {
-    const newName = prompt("Edit category name...", name)
-    if (newName) {
-      fetch(`http://localhost:4000/categories/${id}`,
-        {
-          method: "PUT",
-          body: JSON.stringify({ id: id, newName: newName, color: color, icon: icon }),
-          headers: { "Content-type": "application/json; charset=UTF-8" }
-        }
-      )
-        .then(res => res.json())
-        .then((data) => { loadList() })
-    }
-    else { }
+  function updateCategory() {
+    setLoading(true)
+
+    fetch(`http://localhost:4000/categories/${editingCategory.id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({  newName: newCategory, color: color, icon: icon }),
+        headers: { "Content-type": "application/json; charset=UTF-8" }
+      }
+    )
+      .then(() => { 
+        loadList();
+        setLoading(false);
+        setOpen(false);
+        toast("Successfully updated.");
+        reset()
+      })
   }
 
-  const date = new Date()
-  console.log(date);
+  // const date = new Date()
+  console.log({ editingCategory });
+
+  useEffect(() => {
+    if (editingCategory) {
+      setOpen(true);
+      setNewCategory(editingCategory.name);
+      setIcon(editingCategory.icon);
+      setColor(editingCategory.color)
+      // setIcon(editingCategory.icon);
+      // setColor(editingCategory.color)
+    }
+  }, [editingCategory])
 
   return (
     <main >
       <Toaster />
       {/* add record button */}
-      <Button onClick={createNew} >+ Add New Record</Button>
+
       <Dialog>
-        <DialogTrigger>Open</DialogTrigger>
+        <DialogTrigger>+Add New Record</DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add New Record</DialogTitle>
             <hr />
             <DialogDescription className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="flex flex-col gap-4">
                 <Tabs defaultValue="account" className="w-full ">
-
                   <TabsList className="w-full rounded-full">
                     <TabsTrigger value="account" className="w-[50%] rounded-full">Expense</TabsTrigger>
                     <TabsTrigger value="password" className="w-[50%] rounded-full">Income</TabsTrigger>
                   </TabsList>
-
-                  <TabsContent value="account">
-                    <p className="text-left">Amount</p>
-                    <Input className="" placeholder="$000.00" />
-
-                    Category
-                    <Select>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Find or choose category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem value={category.name} key={category.id}>{category.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TabsContent>
-                  <TabsContent value="password">Change your password here.</TabsContent>
                 </Tabs>
+                <div>
+                  <p className="text-left">Amount</p>
+                  <Input className="" placeholder="$000.00" />
+                </div>
+                <div>
+                  Category
+                  <Select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Find or choose category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem value={category.name} key={category.id}>{category.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2">
+                  <div>
+                    <p>Date</p>
+                    <Input className="" placeholder="000.00" />
+                  </div>
+                  <div>
+                    <p>Time</p>
+                    <Input className="" placeholder="000.00" />
+                  </div>
+                </div>
+                <Button className="w-full rounded-full">Add record</Button>
               </div>
-              <div>
-
+              <div className="flex flex-col gap-4">
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                   <Label htmlFor="email">Payee</Label>
                   <Input type="email" id="email" placeholder="Write here" />
                 </div>
-                <div className="grid w-full max-w-sm items-center gap-1.5">
+                <div className=" w-full max-w-sm items-center gap-1.5 h-[100%]">
                   <Label htmlFor="email">Note</Label>
-                  <Textarea placeholder="Write here" />
+                  <Textarea placeholder="Write here" className="h-[100%]" />
                 </div>
-
               </div>
 
             </DialogDescription>
@@ -194,11 +213,12 @@ export default function Home() {
         </DialogContent>
       </Dialog>
       {/* categories printed displayed */}
+      {/* , updateCategory(category.id, category.name) */}
       {categories.map((category) => (
         <div key={category.id} className="flex gap-2">
           <CategoryIcon iconName={category.icon} color={category.color} />
           {category.name}
-          <Button onClick={() => updateCategory(category.id, category.name)}>edit</Button>
+          <Button onClick={() => setEditingCategory(category)}>edit</Button>
           <Button onClick={() => deleteCategory(category.id)}>delete</Button>
         </div>
       ))}
@@ -211,7 +231,7 @@ export default function Home() {
             <hr />
             <DialogDescription className="flex gap-4">
               <Popover>
-                <PopoverTrigger><House /></PopoverTrigger>
+                <PopoverTrigger><CategoryIcon iconName={icon} color={color}/></PopoverTrigger>
                 <PopoverContent >
                   <div className="grid grid-cols-4 gap-2">
                     {categoryIcons.map(({ name, Icon }) =>
@@ -236,8 +256,13 @@ export default function Home() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={createNew} className="bg-green-700 hover:bg-green-900" disabled={loading}>Add</Button>
-            
+            {editingCategory ? (
+              <Button onClick={updateCategory} className="bg-green-700 hover:bg-green-900" disabled={loading}>Update</Button>
+            ) : (
+              <Button onClick={createNew} className="bg-green-700 hover:bg-green-900" disabled={loading}>Add</Button>
+            )}
+
+
             <Button onClick={() => setOpen(false)}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
@@ -248,11 +273,11 @@ export default function Home() {
 function CategoryIcon({ iconName, color }) {
   const iconObject = categoryIcons.find((item) => item.name === iconName)
   const colorObject = categoryColors.find((item) => item.name === color)
-  if (!iconObject) { return <House/> }
-  
+  if (!iconObject) { return <House /> }
+
   let hexcolor;
   if (!colorObject) { hexcolor = "#000" }
   else { hexcolor = colorObject.value }
   const { Icon } = iconObject
-  return <Icon style={{color: hexcolor}}/>
+  return <Icon style={{ color: hexcolor }} />
 }
