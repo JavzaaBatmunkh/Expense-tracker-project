@@ -76,6 +76,7 @@ export default function Home() {
     setColor("blue");
     setIcon("home");
     setNewCategory("")
+    setEditingCategory(null)
   }
 
   useEffect(() => {
@@ -136,16 +137,12 @@ export default function Home() {
   }
 
   // const date = new Date()
-  console.log({ editingCategory });
-
   useEffect(() => {
     if (editingCategory) {
       setOpen(true);
       setNewCategory(editingCategory.name);
       setIcon(editingCategory.icon);
       setColor(editingCategory.color)
-      // setIcon(editingCategory.icon);
-      // setColor(editingCategory.color)
     }
   }, [editingCategory])
 
@@ -153,7 +150,6 @@ export default function Home() {
     <main >
       <Toaster />
       {/* add record button */}
-
       <Dialog>
         <DialogTrigger>+Add New Record</DialogTrigger>
         <DialogContent>
@@ -180,7 +176,7 @@ export default function Home() {
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category) => (
-                        <SelectItem value={category.name} key={category.id}>{category.name}</SelectItem>
+                        <SelectItem value={category.id} key={category.id}>{category.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -223,7 +219,7 @@ export default function Home() {
         </div>
       ))}
       {/* add new category button */}
-      <Button onClick={() => setOpen(true)} variant="outline" >+ Add New Category</Button>
+      <Button onClick={() => {reset(); setOpen(true)}} variant="outline" >+ Add New Category</Button>
       <Dialog open={open}>
         <DialogContent>
           <DialogHeader>
@@ -261,7 +257,6 @@ export default function Home() {
             ) : (
               <Button onClick={createNew} className="bg-green-700 hover:bg-green-900" disabled={loading}>Add</Button>
             )}
-
 
             <Button onClick={() => setOpen(false)}>Cancel</Button>
           </DialogFooter>

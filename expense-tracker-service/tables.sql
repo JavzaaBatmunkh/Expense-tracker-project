@@ -19,4 +19,18 @@ ALTER TABLE categories
 --     birth_date DATE NOT NULL,
 --     hire_date DATE NOT NULL
 -- )
+CREATE TYPE transactionType AS ENUM ('INCOME','EXPENSE')
+CREATE TABLE transaction (
+    id char(36) PRIMARY KEY,
+    amount decimal (10,2),
+    categoryId char (36),
+    type transactionType,
+    date DATE,
+    payee varchar(64),
+    note TEXT,
+    FOREIGN KEY (categoryId) REFERENCES categories(id)
+)
 
+insert into transaction values('asd', 1000, '0af443e8-e4ea-4a68-8b60-3b46ab194738', 'INCOME', CURRENT_DATE , 'Sarnai', 'Oroo tolov')
+
+select transaction.amount, transaction.type, categories.name, categories.icon, categories.color from transaction left join categories on transaction.categoryId = categories.id 
