@@ -25,11 +25,15 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 
 import { Check, BadgeDollarSign, Bath, Bus, CarFront, ChartCandlestick, Cherry, Drama, FerrisWheel, Fuel, GraduationCap, HandCoins, Hospital, House, IceCreamCone, Laptop, Plane, Shirt, ShoppingCart, SmartphoneNfc, TentTree, TramFront, Utensils, Square } from "lucide-react";
+import { Sidebar } from "@/components/sidebar";
+import { Header } from "@/components/header";
+import { RecordDialog } from "@/components/recordDialog";
+import CategoryDialog from "@/components/categoryDialog";
 const categoryIcons = [
   { name: "transportation", Icon: Bus },
   { name: "ferriswheel", Icon: FerrisWheel },
@@ -66,13 +70,30 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [editingCategory, setEditingCategory] = useState()
 
+  const [amount, setAmount] = useState()
+  const [categoryId, setCategoryId] = useState()
+  const [type, setType] = useState()
+  const [date, setDate] = useState()
+  const [payee, setPayee] = useState()
+  const [note, setNote] = useState()
+  const [editingTransaction, setEditingTransaction] = useState()
+
+
+  const [transactions, setTransactions] = useState([])
+
   function loadList() {
     fetch("http://localhost:4000/categories")
       .then(res => res.json())
       .then((data) => { setCategories(data) })
   }
 
-  function reset(){
+  function loadTransactions() {
+    fetch("http://localhost:4000/transaction")
+      .then(res => res.json())
+      .then((data) => { setTransactions(data) })
+  }
+
+  function reset() {
     setColor("blue");
     setIcon("home");
     setNewCategory("")
@@ -81,6 +102,7 @@ export default function Home() {
 
   useEffect(() => {
     loadList()
+    loadTransactions()
   }, [])
 
   function createNew() {
@@ -99,6 +121,29 @@ export default function Home() {
         loadList();
         setLoading(false)
         setOpen(false);
+        toast("Category has been created successfully.")
+        reset()
+      })
+  }
+
+  function createNewTransaction() {
+    setLoading(true)
+    fetch(`http://localhost:4000/transaction`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          amount: amount,
+          categoryId: categoryId,
+          type: type,
+          date: date,
+          payee: payee,
+          note: note
+        }),
+        headers: { "Content-type": "application/json; charset=UTF-8" }
+      })
+      .then(() => {
+        loadTransactions();
+        setLoading(false)
         toast("Category has been created successfully.")
         reset()
       })
@@ -123,17 +168,54 @@ export default function Home() {
     fetch(`http://localhost:4000/categories/${editingCategory.id}`,
       {
         method: "PUT",
-        body: JSON.stringify({  newName: newCategory, color: color, icon: icon }),
+        body: JSON.stringify({ newName: newCategory, color: color, icon: icon }),
         headers: { "Content-type": "application/json; charset=UTF-8" }
       }
     )
-      .then(() => { 
+      .then(() => {
         loadList();
         setLoading(false);
         setOpen(false);
         toast("Successfully updated.");
         reset()
       })
+  }
+
+  function updateTransaction() {
+    setLoading(true)
+
+    fetch(`http://localhost:4000/categories/${editingTransaction.id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({           
+          amount: amount,
+          categoryId: categoryId,
+          type: type,
+          date: date,
+          payee: payee,
+          note: note }),
+        headers: { "Content-type": "application/json; charset=UTF-8" }
+      }
+    )
+      .then(() => {
+        loadTransactions();
+        setLoading(false);
+        toast("Successfully updated.");
+        reset()
+      })
+  }
+
+  function deleteTransaction(id) {
+    const confirmation = confirm("Are you sure to delete?")
+    if (confirmation === true) {
+      fetch(`http://localhost:4000/categories/${id}`,
+        {
+          method: "DELETE",
+          headers: { "Content-type": "application/json; charset=UTF-8" }
+        })
+        .then(() => { loadTransactions() })
+    }
+    else { }
   }
 
   // const date = new Date()
@@ -146,122 +228,151 @@ export default function Home() {
     }
   }, [editingCategory])
 
+
   return (
-    <main >
+    <main className="flex gap-10">
+      <Header/>
+      <Sidebar/>
+      <RecordDialog/>
       <Toaster />
-      {/* add record button */}
-      <Dialog>
-        <DialogTrigger>+Add New Record</DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Record</DialogTitle>
-            <hr />
-            <DialogDescription className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-4">
-                <Tabs defaultValue="account" className="w-full ">
-                  <TabsList className="w-full rounded-full">
-                    <TabsTrigger value="account" className="w-[50%] rounded-full">Expense</TabsTrigger>
-                    <TabsTrigger value="password" className="w-[50%] rounded-full">Income</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-                <div>
-                  <p className="text-left">Amount</p>
-                  <Input className="" placeholder="$000.00" />
-                </div>
-                <div>
-                  Category
-                  <Select>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Find or choose category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem value={category.id} key={category.id}>{category.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex gap-2">
+      <div>
+        {/* add record button */}
+        {/* <Dialog>
+          <DialogTrigger>+Add New Record</DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Record</DialogTitle>
+              <hr />
+              <DialogDescription className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
+                  <RadioGroup value={type}  onValueChange={(val) => setType(val)}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="expense" id="option-one" />
+                      <Label htmlFor="option-one">Expense</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="income" id="option-two" />
+                      <Label htmlFor="option-two">Income</Label>
+                    </div>
+                  </RadioGroup>
                   <div>
-                    <p>Date</p>
-                    <Input className="" placeholder="000.00" />
+                    <p className="text-left">Amount</p>
+                    <Input className="" placeholder="$000.00" disabled={loading} value={amount}
+                        onChange={(event) => { setAmount(event.target.value) }}/>
                   </div>
                   <div>
-                    <p>Time</p>
-                    <Input className="" placeholder="000.00" />
+                    Category
+                    <Select onValueChange={(val) => setCategoryId(val)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Find or choose category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem value={category.id} key={category.id}>{category.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2">
+                    <div>
+                      <p>Date</p>
+                      <Input className="" placeholder="000.00" type="text" disabled={loading} value={date}
+                        onChange={(event) => { setDate(event.target.value) }} />
+                    </div>
+                    <div>
+                      <p>Time</p>
+                      <Input className="" placeholder="000.00" />
+                    </div>
+                  </div>
+                  <Button className="w-full rounded-full" onClick={createNewTransaction} >Add record</Button>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="grid w-full max-w-sm items-center gap-1.5">
+                    <Label >Payee</Label>
+                    <Input placeholder="Write here" type="text" disabled={loading} value={payee}
+                      onChange={(event) => { setPayee(event.target.value) }} />
+                  </div>
+                  <div className=" w-full max-w-sm items-center gap-1.5 h-[100%]">
+                    <Label>Note</Label>
+                    <Textarea placeholder="Write here" className="h-[100%]" type="text" disabled={loading} value={note}
+                      onChange={(event) => { setNote(event.target.value) }} />
                   </div>
                 </div>
-                <Button className="w-full rounded-full">Add record</Button>
-              </div>
-              <div className="flex flex-col gap-4">
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <Label htmlFor="email">Payee</Label>
-                  <Input type="email" id="email" placeholder="Write here" />
-                </div>
-                <div className=" w-full max-w-sm items-center gap-1.5 h-[100%]">
-                  <Label htmlFor="email">Note</Label>
-                  <Textarea placeholder="Write here" className="h-[100%]" />
-                </div>
-              </div>
 
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-      {/* categories printed displayed */}
-      {/* , updateCategory(category.id, category.name) */}
-      {categories.map((category) => (
-        <div key={category.id} className="flex gap-2">
-          <CategoryIcon iconName={category.icon} color={category.color} />
-          {category.name}
-          <Button onClick={() => setEditingCategory(category)}>edit</Button>
-          <Button onClick={() => deleteCategory(category.id)}>delete</Button>
-        </div>
-      ))}
-      {/* add new category button */}
-      <Button onClick={() => {reset(); setOpen(true)}} variant="outline" >+ Add New Category</Button>
-      <Dialog open={open}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Category</DialogTitle>
-            <hr />
-            <DialogDescription className="flex gap-4">
-              <Popover>
-                <PopoverTrigger><CategoryIcon iconName={icon} color={color}/></PopoverTrigger>
-                <PopoverContent >
-                  <div className="grid grid-cols-4 gap-2">
-                    {categoryIcons.map(({ name, Icon }) =>
-                      <div className={`relative w-8 h-8 flex justify-center items-center rounded-lg
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog> */}
+        {/* categories printed displayed */}
+        {/* , updateCategory(category.id, category.name) */}
+        {categories.map((category) => (
+          <div key={category.id} className="flex gap-2">
+            <CategoryIcon iconName={category.icon} color={category.color} />
+            {category.name}
+            <Button onClick={() => setEditingCategory(category)}>edit</Button>
+            <Button onClick={() => deleteCategory(category.id)}>delete</Button>
+          </div>
+        ))}
+        {/* add new category button */}
+        <Button onClick={() => { reset(); setOpen(true) }} variant="outline" >+ Add New Category</Button>
+        {/* <Dialog open={open}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Category</DialogTitle>
+              <hr />
+              <DialogDescription className="flex gap-4">
+                <Popover>
+                  <PopoverTrigger><CategoryIcon iconName={icon} color={color} /></PopoverTrigger>
+                  <PopoverContent >
+                    <div className="grid grid-cols-4 gap-2">
+                      {categoryIcons.map(({ name, Icon }) =>
+                        <div className={`relative w-8 h-8 flex justify-center items-center rounded-lg
                       ${icon === name ? "bg-blue-300 border-blue-950" : ""}`} value={name} key={name}
-                        onClick={() => setIcon(name)}>
-                        {<Icon />}
-                      </div>)}
-                  </div>
-                  <hr className="my-4" />
-                  <div className="flex gap-1">
-                    {categoryColors.map(({ name, value }) =>
-                      <div key={name} className="rounded-full h-8 w-8 flex justify-center items-center" style={{ background: value }}
-                        onClick={() => setColor(name)}>
-                        {color === name && <Check className="text-white w-4" />}
-                      </div>)}
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <Input placeholder="Name" type="text" value={newCategory} disabled={loading}
-                onChange={(event) => { setNewCategory(event.target.value) }} />
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            {editingCategory ? (
-              <Button onClick={updateCategory} className="bg-green-700 hover:bg-green-900" disabled={loading}>Update</Button>
-            ) : (
-              <Button onClick={createNew} className="bg-green-700 hover:bg-green-900" disabled={loading}>Add</Button>
-            )}
+                          onClick={() => setIcon(name)}>
+                          {<Icon />}
+                        </div>)}
+                    </div>
+                    <hr className="my-4" />
+                    <div className="flex gap-1">
+                      {categoryColors.map(({ name, value }) =>
+                        <div key={name} className="rounded-full h-8 w-8 flex justify-center items-center" style={{ background: value }}
+                          onClick={() => setColor(name)}>
+                          {color === name && <Check className="text-white w-4" />}
+                        </div>)}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <Input placeholder="Name" type="text" value={newCategory} disabled={loading}
+                  onChange={(event) => { setNewCategory(event.target.value) }} />
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              {editingCategory ? (
+                <Button onClick={updateCategory} className="bg-green-700 hover:bg-green-900" disabled={loading}>Update</Button>
+              ) : (
+                <Button onClick={createNew} className="bg-green-700 hover:bg-green-900" disabled={loading}>Add</Button>
+              )}
 
-            <Button onClick={() => setOpen(false)}>Cancel</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <Button onClick={() => setOpen(false)}>Cancel</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog> */}
+        <CategoryDialog open={open} onClose={()=>setOpen(false)}/>
+      </div>
+      <div>
+        {transactions.map((transaction) => (
+          <div key={transaction.id} className="flex gap-2">
+            <div className="w-10 h-10 rounded-full flex justify-center items-center" style={{ background: transaction.color }}>
+              <CategoryIcon iconName={transaction.icon} className="text-white" />
+            </div>
+            {transaction.name}
+            {transaction.amount}
+            <Button >edit</Button>
+            <Button >delete</Button>
+          </div>
+        ))}
+
+      </div>
     </main>
   );
 }
