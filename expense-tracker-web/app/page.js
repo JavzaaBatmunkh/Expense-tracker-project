@@ -34,6 +34,9 @@ import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { RecordDialog } from "@/components/recordDialog";
 import CategoryDialog from "@/components/categoryDialog";
+import { Checkbox } from "@/components/ui/checkbox"
+import { useRouter } from 'next/navigation'
+
 const categoryIcons = [
   { name: "transportation", Icon: Bus },
   { name: "ferriswheel", Icon: FerrisWheel },
@@ -69,17 +72,8 @@ export default function Home() {
   const [newCategory, setNewCategory] = useState("")
   const [loading, setLoading] = useState(false)
   const [editingCategory, setEditingCategory] = useState()
-
-  const [amount, setAmount] = useState()
-  const [categoryId, setCategoryId] = useState()
-  const [type, setType] = useState()
-  const [date, setDate] = useState()
-  const [payee, setPayee] = useState()
-  const [note, setNote] = useState()
-  const [editingTransaction, setEditingTransaction] = useState()
-
-
   const [transactions, setTransactions] = useState([])
+  const router = useRouter()
 
   function loadList() {
     fetch("http://localhost:4000/categories")
@@ -87,11 +81,11 @@ export default function Home() {
       .then((data) => { setCategories(data) })
   }
 
-  // function loadTransactions() {
-  //   fetch("http://localhost:4000/transaction")
-  //     .then(res => res.json())
-  //     .then((data) => { setTransactions(data) })
-  // }
+  function loadTransactions() {
+    fetch("http://localhost:4000/transaction")
+      .then(res => res.json())
+      .then((data) => { setTransactions(data) })
+  }
 
   function reset() {
     setColor("blue");
@@ -102,7 +96,7 @@ export default function Home() {
 
   useEffect(() => {
     loadList()
-    // loadTransactions()
+    loadTransactions()
   }, [])
 
   function createNew() {
@@ -126,29 +120,6 @@ export default function Home() {
       })
   }
 
-  // function createNewTransaction() {
-  //   setLoading(true)
-  //   fetch(`http://localhost:4000/transaction`,
-  //     {
-  //       method: "POST",
-  //       body: JSON.stringify({
-  //         amount: amount,
-  //         categoryId: categoryId,
-  //         type: type,
-  //         date: date,
-  //         payee: payee,
-  //         note: note
-  //       }),
-  //       headers: { "Content-type": "application/json; charset=UTF-8" }
-  //     })
-  //     .then(() => {
-  //       loadTransactions();
-  //       setLoading(false)
-  //       toast("Category has been created successfully.")
-  //       reset()
-  //     })
-  // }
-
   function deleteCategory(id) {
     const confirmation = confirm("Are you sure to delete?")
     if (confirmation === true) {
@@ -157,7 +128,15 @@ export default function Home() {
           method: "DELETE",
           headers: { "Content-type": "application/json; charset=UTF-8" }
         })
-        .then(() => { loadList() })
+        .then((res) => {
+          if (res.status === 204){
+            loadList();
+            toast('Success')
+          }
+          else {
+            toast.error("ajskdljalksdjalskd skjks")
+          }
+          })
     }
     else { }
   }
@@ -181,42 +160,18 @@ export default function Home() {
       })
   }
 
-  // function updateTransaction() {
-  //   setLoading(true)
-
-  //   fetch(`http://localhost:4000/categories/${editingTransaction.id}`,
-  //     {
-  //       method: "PUT",
-  //       body: JSON.stringify({           
-  //         amount: amount,
-  //         categoryId: categoryId,
-  //         type: type,
-  //         date: date,
-  //         payee: payee,
-  //         note: note }),
-  //       headers: { "Content-type": "application/json; charset=UTF-8" }
-  //     }
-  //   )
-  //     .then(() => {
-  //       loadTransactions();
-  //       setLoading(false);
-  //       toast("Successfully updated.");
-  //       reset()
-  //     })
-  // }
-
-  // function deleteTransaction(id) {
-  //   const confirmation = confirm("Are you sure to delete?")
-  //   if (confirmation === true) {
-  //     fetch(`http://localhost:4000/categories/${id}`,
-  //       {
-  //         method: "DELETE",
-  //         headers: { "Content-type": "application/json; charset=UTF-8" }
-  //       })
-  //       .then(() => { loadTransactions() })
-  //   }
-  //   else { }
-  // }
+  function deleteTransaction(id) {
+    const confirmation = confirm("Are you sure to delete?")
+    if (confirmation === true) {
+      fetch(`http://localhost:4000/transaction/${id}`,
+        {
+          method: "DELETE",
+          headers: { "Content-type": "application/json; charset=UTF-8" }
+        })
+        .then(() => { loadTransactions() })
+    }
+    else { }
+  }
 
   // const date = new Date()
   useEffect(() => {
@@ -233,78 +188,10 @@ export default function Home() {
     <main className="flex gap-10">
       <Header/>
       <Sidebar/>
-      <RecordDialog/>
-      <Toaster />
+      <RecordDialog onComplete={loadTransactions}/>
+      <Toaster richColors />
       <div>
-        {/* add record button */}
-        {/* <Dialog>
-          <DialogTrigger>+Add New Record</DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Record</DialogTitle>
-              <hr />
-              <DialogDescription className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-4">
-                  <RadioGroup value={type}  onValueChange={(val) => setType(val)}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="expense" id="option-one" />
-                      <Label htmlFor="option-one">Expense</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="income" id="option-two" />
-                      <Label htmlFor="option-two">Income</Label>
-                    </div>
-                  </RadioGroup>
-                  <div>
-                    <p className="text-left">Amount</p>
-                    <Input className="" placeholder="$000.00" disabled={loading} value={amount}
-                        onChange={(event) => { setAmount(event.target.value) }}/>
-                  </div>
-                  <div>
-                    Category
-                    <Select onValueChange={(val) => setCategoryId(val)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Find or choose category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem value={category.id} key={category.id}>{category.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex gap-2">
-                    <div>
-                      <p>Date</p>
-                      <Input className="" placeholder="000.00" type="text" disabled={loading} value={date}
-                        onChange={(event) => { setDate(event.target.value) }} />
-                    </div>
-                    <div>
-                      <p>Time</p>
-                      <Input className="" placeholder="000.00" />
-                    </div>
-                  </div>
-                  <Button className="w-full rounded-full" onClick={createNewTransaction} >Add record</Button>
-                </div>
-                <div className="flex flex-col gap-4">
-                  <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label >Payee</Label>
-                    <Input placeholder="Write here" type="text" disabled={loading} value={payee}
-                      onChange={(event) => { setPayee(event.target.value) }} />
-                  </div>
-                  <div className=" w-full max-w-sm items-center gap-1.5 h-[100%]">
-                    <Label>Note</Label>
-                    <Textarea placeholder="Write here" className="h-[100%]" type="text" disabled={loading} value={note}
-                      onChange={(event) => { setNote(event.target.value) }} />
-                  </div>
-                </div>
-
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog> */}
         {/* categories printed displayed */}
-        {/* , updateCategory(category.id, category.name) */}
         {categories.map((category) => (
           <div key={category.id} className="flex gap-2">
             <CategoryIcon iconName={category.icon} color={category.color} />
@@ -352,26 +239,26 @@ export default function Home() {
               ) : (
                 <Button onClick={createNew} className="bg-green-700 hover:bg-green-900" disabled={loading}>Add</Button>
               )}
-
               <Button onClick={() => setOpen(false)}>Cancel</Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
-        
+        </Dialog>  
       </div>
       <div>
         {transactions.map((transaction) => (
           <div key={transaction.id} className="flex gap-2">
+            <Checkbox />
             <div className="w-10 h-10 rounded-full flex justify-center items-center" style={{ background: transaction.color }}>
               <CategoryIcon iconName={transaction.icon} className="text-white" />
             </div>
+            
             {transaction.name}
             {transaction.amount}
-            <Button >edit</Button>
-            <Button >delete</Button>
+            {transaction.time}
+            <Button onClick={() => router.push(`?editing=${transaction.id}`)}>edit</Button>
+            <Button onClick={() => deleteTransaction(transaction.id)}>delete</Button>
           </div>
         ))}
-
       </div>
     </main>
   );

@@ -26,23 +26,30 @@ async function deleteCategories(id) {
 }
 
 async function getTransaction() {
-  const list = await sql`select categories.id, transaction.amount, transaction.type, categories.name, categories.icon, categories.color from transaction left join categories on transaction.categoryId = categories.id `;
+  const list = await sql`select transaction.id, transaction.amount, transaction.type, transaction.time, categories.name, categories.icon, categories.color from transaction left join categories on transaction.categoryId = categories.id `;
   console.log({ list })
   return list;
 }
-async function createNewTransaction({amount, categoryid, type, date, payee, note}) {
+async function getOneTransaction(id) {
+  const list = await sql`select * from transaction where id=${id} `;
+  if (list.length) {
+    return list[0];
+  }
+  return null;
+}
+async function createNewTransaction({amount, categoryid, type, date, time, payee, note}) {
   const id = uuidv4()
-  await sql`INSERT INTO transaction (id, amount, categoryid, type, date, payee, note) VALUES(${id}, ${amount}, ${categoryid}, ${type}, ${date},${payee},${note} )`
+  await sql`INSERT INTO transaction (id, amount, categoryid, type, date, time, payee, note) VALUES(${id}, ${amount}, ${categoryid}, ${type}, ${date}, ${time},${payee},${note} )`
   return id;
 }
-async function updateTransaction(id, {amount, categoryid, type, date, payee, note}) {
-  await sql`update transaction set amount=${amount}, categoryid=${categoryid}, type=${type}, date=${date}, payee=${payee}, note=${note} where id=${id}`
+async function updateTransaction(id, {amount, categoryid, type, date, time, payee, note}) {
+  await sql`update transaction set amount=${amount}, categoryid=${categoryid}, type=${type}, date=${date}, payee=${payee}, time=${time}, note=${note} where id=${id}`
 }
 async function deleteTransaction(id) {
   await sql`delete from transaction where id=${id}`;
 }
 
 module.exports = {
-  getCategories, createNewCategory, getOneCategories,
+  getCategories, createNewCategory, getOneCategories,getOneTransaction,
   updateCategories, deleteCategories, getTransaction, createNewTransaction, updateTransaction, deleteTransaction
 }

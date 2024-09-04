@@ -2,7 +2,7 @@ const { startApp } = require(`./configs/basic`)
 const app = startApp()
 const { getCategories, createNewCategory, getOneCategories,
   updateCategories, deleteCategories, getTransaction, createNewTransaction,
-  updateTransaction, deleteTransaction} = require("./services/categoryService")
+  updateTransaction, deleteTransaction, getOneTransaction} = require("./services/categoryService")
 
 app.get("/categories", async (req, res) => {
   const categories = await getCategories()
@@ -31,8 +31,16 @@ app.put("/categories/:id", async (req, res) => {
 
 app.delete("/categories/:id", async (req, res) => {
   const { id } = req.params
-  await deleteCategories(id)
-  res.sendStatus(204)
+  try {
+    await deleteCategories(id)
+    res.sendStatus(204)
+
+  }
+  catch(error) {
+    console.log(error)
+    res.status(400).json({message: error})
+
+  }
 })
 
 app.get("/transaction", async (req, res) => {
@@ -40,21 +48,28 @@ app.get("/transaction", async (req, res) => {
   res.json(transaction)
 })
 
-// app.post("/transaction", async (req, res) => {
-//   const list= await createNewTransaction(req.body)
-//   res.json(list)
-// })
+app.get("/transaction/:id", async (req, res) => {
+  const { id } = req.params
+  const list = await getOneTransaction(id)
+  console.log({ list })
+  res.json(list)
+})
 
-// app.put("/transaction/:id", async (req, res) => {
-//   const { id } = req.params
-//   const list = await updateTransaction(id, req.body)
-//   res.status(201).json({list})
-// })
+app.post("/transaction", async (req, res) => {
+  const list= await createNewTransaction(req.body)
+  res.json(list)
+})
 
-// app.delete("/transaction/:id", async (req, res) => {
-//   const { id } = req.params
-//   await deleteTransaction(id)
-//   res.sendStatus(204)
-// })
+app.put("/transaction/:id", async (req, res) => {
+  const { id } = req.params
+  const list = await updateTransaction(id, req.body)
+  res.status(201).json({list})
+})
+
+app.delete("/transaction/:id", async (req, res) => {
+  const { id } = req.params
+  await deleteTransaction(id)
+  res.sendStatus(204)
+})
 
 

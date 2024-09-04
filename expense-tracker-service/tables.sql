@@ -26,6 +26,7 @@ CREATE TABLE transaction (
     categoryId char (36),
     type transactionType,
     date DATE,
+    time TIME,
     payee varchar(64),
     note TEXT,
     FOREIGN KEY (categoryId) REFERENCES categories(id)

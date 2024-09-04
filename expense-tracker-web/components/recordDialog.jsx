@@ -21,27 +21,25 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 
-export function RecordDialog() {
+export function RecordDialog({ onComplete }) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const create = searchParams.get('create')
-    const open = create === "new"
+    const editingId = searchParams.get('editing')
+    const open = create === "new" || editingId
 
     const [amount, setAmount] = useState()
     const [categoryId, setCategoryId] = useState()
     const [type, setType] = useState()
     const [date, setDate] = useState()
+    const [time, setTime] = useState()
     const [payee, setPayee] = useState()
     const [note, setNote] = useState()
-    const [editingTransaction, setEditingTransaction] = useState()
     const [loading, setLoading] = useState(false)
     const [categories, setCategories] = useState([])
-
-
-    const [transactions, setTransactions] = useState([])
+    const [editingTransaction, setEditingTransaction] = useState()
 
     function loadList() {
         fetch("http://localhost:4000/categories")
@@ -51,14 +49,33 @@ export function RecordDialog() {
 
     useEffect(() => {
         loadList()
-        // loadTransactions()
     }, [])
 
+    useEffect(() => {
+        if (editingId) {
+            getTransactionById(editingId)
+        }
+    }, [editingId])
+
+
+    function getTransactionById(editingId) {
+        console.log(editingId)
+        fetch(`http://localhost:4000/transaction/${editingId}`)
+            .then(res => res.json())
+            .then((data) => { 
+                console.log(data)
+                setAmount(data.amount);
+                setCategoryId(data.categoryid);
+                setType(data.type);
+                setDate(data.date);
+                setTime(data.time)
+                setPayee(data.payee)
+                setNote(data.note)
+            })
+    }
+
     function reset() {
-        setType();
-        setDate();
-        setPayee()
-        setNote()
+
     }
 
     function createNewTransaction() {
@@ -68,44 +85,70 @@ export function RecordDialog() {
                 method: "POST",
                 body: JSON.stringify({
                     amount: amount,
-                    categoryId: categoryId,
+                    categoryid: categoryId,
                     type: type,
                     date: date,
+                    time: time,
                     payee: payee,
                     note: note
                 }),
                 headers: { "Content-type": "application/json; charset=UTF-8" }
             })
             .then(() => {
-                loadTransactions();
+                onComplete();
                 setLoading(false)
-                toast("Category has been created successfully.")
+                toast.success("Category has been created successfully.")
+                reset()
+                onClose()
+            })
+    }
+
+    function updateTransaction() {
+        setLoading(true)
+
+        fetch(`http://localhost:4000/categories/${editingTransaction.id}`,
+            {
+                method: "PUT",
+                body: JSON.stringify({
+                    amount: amount,
+                    categoryid: categoryId,
+                    type: type,
+                    date: date,
+                    payee: payee,
+                    note: note
+                }),
+                headers: { "Content-type": "application/json; charset=UTF-8" }
+            }
+        )
+            .then(() => {
+                loadTransactions();
+                setLoading(false);
+                toast("Successfully updated.");
                 reset()
             })
     }
-    function loadTransactions() {
-        fetch("http://localhost:4000/transaction")
-            .then(res => res.json())
-            .then((data) => { setTransactions(data) })
+
+    function onClose() {
+        router.push(`?`)
     }
     return (
         <Dialog open={open}>
             <div>
-                
+
             </div>
             <DialogContent onClose={() => router.push(`?`)}>
                 <DialogHeader>
                     <DialogTitle>Add New Record</DialogTitle>
                     <hr />
-                    <DialogDescription className="grid grid-cols-2 gap-4">
+                    <DialogDescription className="grid grid-cols-2 gap-12">
                         <div className="flex flex-col gap-4">
                             <RadioGroup value={type} onValueChange={(val) => setType(val)}>
                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="expense" id="option-one" />
+                                    <RadioGroupItem value="EXPENSE" id="option-one" />
                                     <Label htmlFor="option-one">Expense</Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="income" id="option-two" />
+                                    <RadioGroupItem value="INCOME" id="option-two" />
                                     <Label htmlFor="option-two">Income</Label>
                                 </div>
                             </RadioGroup>
@@ -130,15 +173,16 @@ export function RecordDialog() {
                             <div className="flex gap-2">
                                 <div>
                                     <p>Date</p>
-                                    <Input className="" placeholder="000.00" type="text" disabled={loading} value={date}
+                                    <Input className="" type="date" disabled={loading} value={date}
                                         onChange={(event) => { setDate(event.target.value) }} />
                                 </div>
                                 <div>
                                     <p>Time</p>
-                                    <Input className="" placeholder="000.00" />
+                                    <Input className="" type="time" disabled={loading} value={time}
+                                        onChange={(event) => { setTime(event.target.value) }} />
                                 </div>
                             </div>
-                            <Button className="w-full rounded-full" onClick={createNewTransaction} >Add record</Button>
+                            <Button className="w-full rounded-full" onClick={createNewTransaction} disabled={loading}>Add record</Button>
                         </div>
                         <div className="flex flex-col gap-4">
                             <div className="grid w-full max-w-sm items-center gap-1.5">
