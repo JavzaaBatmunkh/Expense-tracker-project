@@ -25,7 +25,6 @@ app.post("/categories", async (req, res) => {
 
 app.put("/categories/:id", async (req, res) => {
   const { id } = req.params
-  // const { newName } = req.body;
   const list = await updateCategories(id, req.body)
   res.status(201).json({list})
 })
@@ -41,21 +40,21 @@ app.get("/transaction", async (req, res) => {
   res.json(transaction)
 })
 
-app.post("/transaction", async (req, res) => {
-  const list= await createNewTransaction(req.body)
-  res.json(list)
-})
+// app.post("/transaction", async (req, res) => {
+//   const list= await createNewTransaction(req.body)
+//   res.json(list)
+// })
 
-app.put("/transaction/:id", async (req, res) => {
-  const { id } = req.params
-  const list = await updateTransaction(id, req.body)
-  res.status(201).json({list})
-})
+// app.put("/transaction/:id", async (req, res) => {
+//   const { id } = req.params
+//   const list = await updateTransaction(id, req.body)
+//   res.status(201).json({list})
+// })
 
-app.delete("/transaction/:id", async (req, res) => {
-  const { id } = req.params
-  await deleteTransaction(id)
-  res.sendStatus(204)
-})
+// app.delete("/transaction/:id", async (req, res) => {
+//   const { id } = req.params
+//   await deleteTransaction(id)
+//   res.sendStatus(204)
+// })
 
 

@@ -8,21 +8,97 @@ import {
     DialogTrigger,
     DialogFooter,
 } from "@/components/ui/dialog"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { useEffect, useState } from "react";
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 
 export function RecordDialog() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const create = searchParams.get('create')
     const open = create === "new"
+
+    const [amount, setAmount] = useState()
+    const [categoryId, setCategoryId] = useState()
+    const [type, setType] = useState()
+    const [date, setDate] = useState()
+    const [payee, setPayee] = useState()
+    const [note, setNote] = useState()
+    const [editingTransaction, setEditingTransaction] = useState()
+    const [loading, setLoading] = useState(false)
+    const [categories, setCategories] = useState([])
+
+
+    const [transactions, setTransactions] = useState([])
+
+    function loadList() {
+        fetch("http://localhost:4000/categories")
+            .then(res => res.json())
+            .then((data) => { setCategories(data) })
+    }
+
+    useEffect(() => {
+        loadList()
+        // loadTransactions()
+    }, [])
+
+    function reset() {
+        setType();
+        setDate();
+        setPayee()
+        setNote()
+    }
+
+    function createNewTransaction() {
+        setLoading(true)
+        fetch(`http://localhost:4000/transaction`,
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    amount: amount,
+                    categoryId: categoryId,
+                    type: type,
+                    date: date,
+                    payee: payee,
+                    note: note
+                }),
+                headers: { "Content-type": "application/json; charset=UTF-8" }
+            })
+            .then(() => {
+                loadTransactions();
+                setLoading(false)
+                toast("Category has been created successfully.")
+                reset()
+            })
+    }
+    function loadTransactions() {
+        fetch("http://localhost:4000/transaction")
+            .then(res => res.json())
+            .then((data) => { setTransactions(data) })
+    }
     return (
         <Dialog open={open}>
-            <DialogTrigger>+Add New Record</DialogTrigger>
+            <div>
+                
+            </div>
             <DialogContent onClose={() => router.push(`?`)}>
                 <DialogHeader>
                     <DialogTitle>Add New Record</DialogTitle>
                     <hr />
                     <DialogDescription className="grid grid-cols-2 gap-4">
-                        {/* <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-4">
                             <RadioGroup value={type} onValueChange={(val) => setType(val)}>
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="expense" id="option-one" />
@@ -75,7 +151,7 @@ export function RecordDialog() {
                                 <Textarea placeholder="Write here" className="h-[100%]" type="text" disabled={loading} value={note}
                                     onChange={(event) => { setNote(event.target.value) }} />
                             </div>
-                        </div> */}
+                        </div>
 
                     </DialogDescription>
                 </DialogHeader>

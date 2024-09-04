@@ -87,11 +87,11 @@ export default function Home() {
       .then((data) => { setCategories(data) })
   }
 
-  function loadTransactions() {
-    fetch("http://localhost:4000/transaction")
-      .then(res => res.json())
-      .then((data) => { setTransactions(data) })
-  }
+  // function loadTransactions() {
+  //   fetch("http://localhost:4000/transaction")
+  //     .then(res => res.json())
+  //     .then((data) => { setTransactions(data) })
+  // }
 
   function reset() {
     setColor("blue");
@@ -102,7 +102,7 @@ export default function Home() {
 
   useEffect(() => {
     loadList()
-    loadTransactions()
+    // loadTransactions()
   }, [])
 
   function createNew() {
@@ -126,28 +126,28 @@ export default function Home() {
       })
   }
 
-  function createNewTransaction() {
-    setLoading(true)
-    fetch(`http://localhost:4000/transaction`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          amount: amount,
-          categoryId: categoryId,
-          type: type,
-          date: date,
-          payee: payee,
-          note: note
-        }),
-        headers: { "Content-type": "application/json; charset=UTF-8" }
-      })
-      .then(() => {
-        loadTransactions();
-        setLoading(false)
-        toast("Category has been created successfully.")
-        reset()
-      })
-  }
+  // function createNewTransaction() {
+  //   setLoading(true)
+  //   fetch(`http://localhost:4000/transaction`,
+  //     {
+  //       method: "POST",
+  //       body: JSON.stringify({
+  //         amount: amount,
+  //         categoryId: categoryId,
+  //         type: type,
+  //         date: date,
+  //         payee: payee,
+  //         note: note
+  //       }),
+  //       headers: { "Content-type": "application/json; charset=UTF-8" }
+  //     })
+  //     .then(() => {
+  //       loadTransactions();
+  //       setLoading(false)
+  //       toast("Category has been created successfully.")
+  //       reset()
+  //     })
+  // }
 
   function deleteCategory(id) {
     const confirmation = confirm("Are you sure to delete?")
@@ -181,42 +181,42 @@ export default function Home() {
       })
   }
 
-  function updateTransaction() {
-    setLoading(true)
+  // function updateTransaction() {
+  //   setLoading(true)
 
-    fetch(`http://localhost:4000/categories/${editingTransaction.id}`,
-      {
-        method: "PUT",
-        body: JSON.stringify({           
-          amount: amount,
-          categoryId: categoryId,
-          type: type,
-          date: date,
-          payee: payee,
-          note: note }),
-        headers: { "Content-type": "application/json; charset=UTF-8" }
-      }
-    )
-      .then(() => {
-        loadTransactions();
-        setLoading(false);
-        toast("Successfully updated.");
-        reset()
-      })
-  }
+  //   fetch(`http://localhost:4000/categories/${editingTransaction.id}`,
+  //     {
+  //       method: "PUT",
+  //       body: JSON.stringify({           
+  //         amount: amount,
+  //         categoryId: categoryId,
+  //         type: type,
+  //         date: date,
+  //         payee: payee,
+  //         note: note }),
+  //       headers: { "Content-type": "application/json; charset=UTF-8" }
+  //     }
+  //   )
+  //     .then(() => {
+  //       loadTransactions();
+  //       setLoading(false);
+  //       toast("Successfully updated.");
+  //       reset()
+  //     })
+  // }
 
-  function deleteTransaction(id) {
-    const confirmation = confirm("Are you sure to delete?")
-    if (confirmation === true) {
-      fetch(`http://localhost:4000/categories/${id}`,
-        {
-          method: "DELETE",
-          headers: { "Content-type": "application/json; charset=UTF-8" }
-        })
-        .then(() => { loadTransactions() })
-    }
-    else { }
-  }
+  // function deleteTransaction(id) {
+  //   const confirmation = confirm("Are you sure to delete?")
+  //   if (confirmation === true) {
+  //     fetch(`http://localhost:4000/categories/${id}`,
+  //       {
+  //         method: "DELETE",
+  //         headers: { "Content-type": "application/json; charset=UTF-8" }
+  //       })
+  //       .then(() => { loadTransactions() })
+  //   }
+  //   else { }
+  // }
 
   // const date = new Date()
   useEffect(() => {
@@ -315,7 +315,7 @@ export default function Home() {
         ))}
         {/* add new category button */}
         <Button onClick={() => { reset(); setOpen(true) }} variant="outline" >+ Add New Category</Button>
-        {/* <Dialog open={open}>
+        <Dialog open={open}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Category</DialogTitle>
@@ -356,8 +356,8 @@ export default function Home() {
               <Button onClick={() => setOpen(false)}>Cancel</Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog> */}
-        <CategoryDialog open={open} onClose={()=>setOpen(false)}/>
+        </Dialog>
+        
       </div>
       <div>
         {transactions.map((transaction) => (
