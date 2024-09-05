@@ -39,7 +39,6 @@ export function RecordDialog({ onComplete }) {
     const [note, setNote] = useState()
     const [loading, setLoading] = useState(false)
     const [categories, setCategories] = useState([])
-    const [editingTransaction, setEditingTransaction] = useState()
 
     function loadList() {
         fetch("http://localhost:4000/categories")
@@ -57,13 +56,12 @@ export function RecordDialog({ onComplete }) {
         }
     }, [editingId])
 
-
     function getTransactionById(editingId) {
-        console.log(editingId)
+        // console.log(editingId)
         fetch(`http://localhost:4000/transaction/${editingId}`)
             .then(res => res.json())
-            .then((data) => { 
-                console.log(data)
+            .then((data) => {
+                // console.log(data)
                 setAmount(data.amount);
                 setCategoryId(data.categoryid);
                 setType(data.type);
@@ -75,7 +73,13 @@ export function RecordDialog({ onComplete }) {
     }
 
     function reset() {
-
+        setAmount();
+        setCategoryId();
+        setType();
+        setDate();
+        setTime()
+        setPayee()
+        setNote()
     }
 
     function createNewTransaction() {
@@ -103,16 +107,17 @@ export function RecordDialog({ onComplete }) {
             })
     }
 
-    function updateTransaction() {
+    function updateTransaction(id) {
         setLoading(true)
 
-        fetch(`http://localhost:4000/categories/${editingTransaction.id}`,
+        fetch(`http://localhost:4000/transaction/${id}`,
             {
                 method: "PUT",
                 body: JSON.stringify({
                     amount: amount,
                     categoryid: categoryId,
                     type: type,
+                    time: time,
                     date: date,
                     payee: payee,
                     note: note
@@ -121,10 +126,11 @@ export function RecordDialog({ onComplete }) {
             }
         )
             .then(() => {
-                loadTransactions();
+                onComplete();
                 setLoading(false);
-                toast("Successfully updated.");
+                toast.success("Successfully updated.");
                 reset()
+                onClose()
             })
     }
 
@@ -133,9 +139,6 @@ export function RecordDialog({ onComplete }) {
     }
     return (
         <Dialog open={open}>
-            <div>
-
-            </div>
             <DialogContent onClose={() => router.push(`?`)}>
                 <DialogHeader>
                     <DialogTitle>Add New Record</DialogTitle>
@@ -182,7 +185,16 @@ export function RecordDialog({ onComplete }) {
                                         onChange={(event) => { setTime(event.target.value) }} />
                                 </div>
                             </div>
-                            <Button className="w-full rounded-full" onClick={createNewTransaction} disabled={loading}>Add record</Button>
+                            {editingId ? (
+                                <Button className="w-full rounded-full" onClick={()=> updateTransaction(editingId)} disabled={loading}>
+                                    Update record
+                                </Button>
+                            ) : (
+                                <Button className="w-full rounded-full" onClick={()=> createNewTransaction(editingId)} disabled={loading}>
+                                    Add record
+                                </Button>
+                            )}
+
                         </div>
                         <div className="flex flex-col gap-4">
                             <div className="grid w-full max-w-sm items-center gap-1.5">

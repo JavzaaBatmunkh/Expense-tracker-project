@@ -33,7 +33,6 @@ import { Check, BadgeDollarSign, Bath, Bus, CarFront, ChartCandlestick, Cherry, 
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { RecordDialog } from "@/components/recordDialog";
-import CategoryDialog from "@/components/categoryDialog";
 import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter } from 'next/navigation'
 
