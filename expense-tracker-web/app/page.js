@@ -1,4 +1,5 @@
 "use client"
+import { useQueryState } from 'nuqs'
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import {
@@ -34,7 +35,7 @@ import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { RecordDialog } from "@/components/recordDialog";
 import { Checkbox } from "@/components/ui/checkbox"
-import { useRouter } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 
 const categoryIcons = [
   { name: "transportation", Icon: Bus },
@@ -73,6 +74,11 @@ export default function Home() {
   const [editingCategory, setEditingCategory] = useState()
   const [transactions, setTransactions] = useState([])
   const router = useRouter()
+  const searchParams = useSearchParams()
+  // const categoryId = searchParams.get('filter')
+  // const type = searchParams.get('type')
+  const [filterType, setFilterType] = useQueryState()
+  const[categoryId, setCategoryId]=useQueryState()
 
   function loadList() {
     fetch("http://localhost:4000/categories")
@@ -95,7 +101,6 @@ export default function Home() {
 
   useEffect(() => {
     loadList()
-    loadTransactions()
   }, [])
 
   function createNew() {
@@ -128,14 +133,14 @@ export default function Home() {
           headers: { "Content-type": "application/json; charset=UTF-8" }
         })
         .then((res) => {
-          if (res.status === 204){
+          if (res.status === 204) {
             loadList();
             toast('Success')
           }
           else {
             toast.error("ajskdljalksdjalskd skjks")
           }
-          })
+        })
     }
     else { }
   }
@@ -172,6 +177,24 @@ export default function Home() {
     else { }
   }
 
+  function loadTransactionsFiltered(categoryId) {
+    // console.log(categoryId)
+    fetch(`http://localhost:4000/transaction?categoryId=${categoryId}`)
+      .then(res => res.json())
+      .then((data) => { setTransactions(data) })
+  }
+
+  function loadTransactionsFilteredByType(filterType) {
+    if (filterType==="EXPENSE" || filterType==="INCOME"){
+      fetch(`http://localhost:4000/transaction?type=${filterType}`)
+      .then(res => res.json())
+      .then((data) => { setTransactions(data) })
+
+    }
+    else{ loadTransactions()
+    }
+  }
+
   // const date = new Date()
   useEffect(() => {
     if (editingCategory) {
@@ -182,19 +205,48 @@ export default function Home() {
     }
   }, [editingCategory])
 
+  useEffect(() => {
+    if (categoryId) {
+      loadTransactionsFiltered(categoryId)
+    }
+    else if (filterType){loadTransactionsFilteredByType(filterType)}
+
+    else {
+      loadTransactions()
+    }
+  }, [categoryId, filterType])
+
 
   return (
     <main className="flex gap-10">
-      <Header/>
-      <Sidebar/>
-      <RecordDialog onComplete={loadTransactions}/>
+      <Header />
+      <Sidebar />
+      <RecordDialog onComplete={loadTransactions} />
       <Toaster richColors />
       <div>
+      <RadioGroup value={filterType} onValueChange={(val) => setFilterType(val)}>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="ALL" id="option-one" />
+                                    <Label htmlFor="option-one">All</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="INCOME" id="option-two" />
+                                    <Label htmlFor="option-two">Income</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="EXPENSE" id="option-three" />
+                                    <Label htmlFor="option-three">Expense</Label>
+                                </div>
+                            </RadioGroup>
         {/* categories printed displayed */}
+
         {categories.map((category) => (
           <div key={category.id} className="flex gap-2">
-            <CategoryIcon iconName={category.icon} color={category.color} />
-            {category.name}
+
+            <div onClick={() =>setCategoryId(category.id)} className="flex gap-4">
+              <CategoryIcon iconName={category.icon} color={category.color} />
+              {category.name}
+            </div>
             <Button onClick={() => setEditingCategory(category)}>edit</Button>
             <Button onClick={() => deleteCategory(category.id)}>delete</Button>
           </div>
@@ -241,7 +293,7 @@ export default function Home() {
               <Button onClick={() => setOpen(false)}>Cancel</Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>  
+        </Dialog>
       </div>
       <div>
         {transactions.map((transaction) => (
@@ -250,7 +302,7 @@ export default function Home() {
             <div className="w-10 h-10 rounded-full flex justify-center items-center" style={{ background: transaction.color }}>
               <CategoryIcon iconName={transaction.icon} className="text-white" />
             </div>
-            
+
             {transaction.name}
             {transaction.amount}
             {transaction.time}

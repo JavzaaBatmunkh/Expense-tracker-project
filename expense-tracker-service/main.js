@@ -2,7 +2,7 @@ const { startApp } = require(`./configs/basic`)
 const app = startApp()
 const { getCategories, createNewCategory, getOneCategories,
   updateCategories, deleteCategories, getTransaction, createNewTransaction,
-  updateTransaction, deleteTransaction, getOneTransaction} = require("./services/categoryService")
+  updateTransaction, deleteTransaction, getOneTransaction, getTransactionFiltered, getTransactionFilteredByType} = require("./services/categoryService")
 
 app.get("/categories", async (req, res) => {
   const categories = await getCategories()
@@ -44,8 +44,22 @@ app.delete("/categories/:id", async (req, res) => {
 })
 
 app.get("/transaction", async (req, res) => {
-  const transaction = await getTransaction()
-  res.json(transaction)
+  const { categoryId, type } = req.query
+
+  console.log({categoryId})
+
+  if (categoryId){
+    const transaction = await getTransactionFiltered(categoryId)
+    res.json(transaction)
+  } 
+  else if (type){
+    const transaction = await getTransactionFilteredByType(type)
+    res.json(transaction)
+  }
+  else {
+    const transaction = await getTransaction()
+    res.json(transaction)
+  }
 })
 
 app.get("/transaction/:id", async (req, res) => {

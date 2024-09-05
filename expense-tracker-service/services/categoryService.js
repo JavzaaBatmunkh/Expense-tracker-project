@@ -30,6 +30,28 @@ async function getTransaction() {
   console.log({ list })
   return list;
 }
+
+async function getTransactionFiltered(id) {
+  const list = await sql`SELECT * 
+FROM transaction
+LEFT JOIN categories 
+  ON transaction.categoryId = categories.id 
+WHERE transaction.categoryId = ${id}; `;
+  console.log({ list })
+  return list;
+}
+
+async function getTransactionFilteredByType(type) {
+  const list = await sql`SELECT * 
+FROM transaction
+LEFT JOIN categories 
+  ON transaction.categoryId = categories.id 
+WHERE transaction.type = ${type}; `;
+  console.log({ list })
+  return list;
+}
+
+
 async function getOneTransaction(id) {
   const list = await sql`select * from transaction where id=${id} `;
   if (list.length) {
@@ -51,5 +73,5 @@ async function deleteTransaction(id) {
 
 module.exports = {
   getCategories, createNewCategory, getOneCategories,getOneTransaction,
-  updateCategories, deleteCategories, getTransaction, createNewTransaction, updateTransaction, deleteTransaction
+  updateCategories, deleteCategories, getTransaction, createNewTransaction, updateTransaction, deleteTransaction, getTransactionFiltered, getTransactionFilteredByType
 }

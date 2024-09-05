@@ -65,7 +65,7 @@ export function RecordDialog({ onComplete }) {
                 setAmount(data.amount);
                 setCategoryId(data.categoryid);
                 setType(data.type);
-                setDate(data.date);
+                setDate(data.date.split('T')[0]);
                 setTime(data.time)
                 setPayee(data.payee)
                 setNote(data.note)
