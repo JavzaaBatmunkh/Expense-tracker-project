@@ -202,6 +202,15 @@ export default function Home() {
     }
   }
 
+  function toggleCategoryId(id){
+    if (id=== categoryId){
+      setCategoryId(null)
+    }
+    else{
+      setCategoryId(id)
+    }
+  }
+
   // const date = new Date()
   useEffect(() => {
     if (editingCategory) {
@@ -251,7 +260,7 @@ export default function Home() {
         {categories.map((category) => (
           <div key={category.id} className="flex gap-2">
 
-            <div onClick={() =>setCategoryId(category.id)} className="flex gap-4">
+            <div onClick={() =>toggleCategoryId(category.id)} className="flex gap-4">
               <CategoryIcon iconName={category.icon} color={category.color} />
               {category.name}
             </div>
@@ -310,7 +319,6 @@ export default function Home() {
             <div className="w-10 h-10 rounded-full flex justify-center items-center" style={{ background: transaction.color }}>
               <CategoryIcon iconName={transaction.icon} className="text-white" />
             </div>
-
             {transaction.name}
             {transaction.amount}
             {transaction.time}
