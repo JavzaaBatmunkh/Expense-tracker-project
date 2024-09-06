@@ -75,10 +75,8 @@ export default function Home() {
   const [transactions, setTransactions] = useState([])
   const router = useRouter()
   const searchParams = useSearchParams()
-  // const categoryId = searchParams.get('filter')
-  // const type = searchParams.get('type')
-  const [filterType, setFilterType] = useQueryState()
-  const[categoryId, setCategoryId]=useQueryState()
+  const [filterType, setFilterType] = useQueryState("filterType")
+  const[categoryId, setCategoryId]=useQueryState("categoryId")
 
   function loadList() {
     fetch("http://localhost:4000/categories")
@@ -178,7 +176,6 @@ export default function Home() {
   }
 
   function loadTransactionsFiltered(categoryId) {
-    // console.log(categoryId)
     fetch(`http://localhost:4000/transaction?categoryId=${categoryId}`)
       .then(res => res.json())
       .then((data) => { setTransactions(data) })
@@ -186,12 +183,22 @@ export default function Home() {
 
   function loadTransactionsFilteredByType(filterType) {
     if (filterType==="EXPENSE" || filterType==="INCOME"){
-      fetch(`http://localhost:4000/transaction?type=${filterType}`)
+      fetch(`http://localhost:4000/transaction?filterType=${filterType}`)
       .then(res => res.json())
       .then((data) => { setTransactions(data) })
-
     }
     else{ loadTransactions()
+    }
+  }
+
+  function loadTransactionsFilteredBy2(filterType, categoryId) {
+    console.log(filterType, categoryId)
+    if (filterType==="EXPENSE" || filterType==="INCOME"){
+      fetch(`http://localhost:4000/transaction?filterType=${filterType}&categoryId=${categoryId}`)
+      .then(res => res.json())
+      .then((data) => { setTransactions(data) })
+    }
+    else{ loadTransactionsFiltered(categoryId)
     }
   }
 
@@ -206,7 +213,8 @@ export default function Home() {
   }, [editingCategory])
 
   useEffect(() => {
-    if (categoryId) {
+    if(categoryId&&filterType){loadTransactionsFilteredBy2(filterType, categoryId)}
+    else if  (categoryId) {
       loadTransactionsFiltered(categoryId)
     }
     else if (filterType){loadTransactionsFilteredByType(filterType)}
