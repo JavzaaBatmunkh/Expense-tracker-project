@@ -236,7 +236,7 @@ export default function Home() {
 
   return (
     <main className="flex gap-10">
-      <Header />
+      
       <Sidebar />
       <RecordDialog onComplete={loadTransactions} />
       <Toaster richColors />
