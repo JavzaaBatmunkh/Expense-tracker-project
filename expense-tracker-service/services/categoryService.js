@@ -26,7 +26,7 @@ async function deleteCategories(id) {
 }
 
 async function getTransaction() {
-  const list = await sql`select transaction.id, transaction.amount, transaction.type, transaction.time, categories.name, categories.icon, categories.color from transaction left join categories on transaction.categoryId = categories.id `;
+  const list = await sql`select transaction.id, transaction.amount, transaction.type, transaction.date, transaction.time, categories.name, categories.icon, categories.color from transaction left join categories on transaction.categoryId = categories.id `;
   console.log({ list })
   return list;
 }
