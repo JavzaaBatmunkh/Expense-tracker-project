@@ -44,6 +44,7 @@ import { Header } from "@/components/header";
 import { RecordDialog } from "@/components/recordDialog";
 import { Checkbox } from "@/components/ui/checkbox"
 import { useSearchParams, useRouter } from 'next/navigation'
+import { ChartPie } from '@/components/chartPIe';
 
 const categoryIcons = [
   { name: "transportation", Icon: Bus },
@@ -85,6 +86,8 @@ export default function Home() {
   const searchParams = useSearchParams()
   const [filterType, setFilterType] = useQueryState("filterType")
   const [categoryId, setCategoryId] = useQueryState("categoryId")
+  const [totalIncome, setTotalIncome] = useState()
+  const [totalExpense, setTotalExpense] = useState()
 
   function loadList() {
     fetch("http://localhost:4000/categories")
@@ -97,6 +100,21 @@ export default function Home() {
       .then(res => res.json())
       .then((data) => { setTransactions(data) })
   }
+  function loadTotalIncome() {
+    fetch("http://localhost:4000/totalIncome")
+      .then(res => res.json())
+      .then((data) => {
+        setTotalIncome(data.sum)
+      })
+  }
+
+  function loadTotalExpense() {
+    fetch("http://localhost:4000/totalExpense")
+      .then(res => res.json())
+      .then((data) => {
+        setTotalExpense(data.sum)
+      })
+  }
 
   function reset() {
     setColor("blue");
@@ -106,8 +124,15 @@ export default function Home() {
   }
 
   useEffect(() => {
-    loadList()
+    loadList(),
+      loadTotalIncome(),
+      loadTotalExpense()
   }, [])
+
+  useEffect(() => {
+    loadTotalIncome()
+    loadTotalExpense()
+  }, [transactions])
 
   function createNew() {
     setLoading(true)
@@ -250,7 +275,7 @@ export default function Home() {
         <Toaster richColors />
         <Card className="bg-slate-100">
           <CardHeader>
-            <CardTitle>Records</CardTitle>
+            <CardTitle>Records{totalIncome}</CardTitle>
             <Button onClick={() => router.push(`?create=new`)}>+Add</Button>
           </CardHeader>
           <CardContent>
@@ -374,7 +399,7 @@ export default function Home() {
       </div>
       <div className='px-[5%] bg-slate-200 h-screen pt-4'>
         <div className='grid grid-cols-3 gap-4'>
-        <Card className="bg-blue">
+          <Card className="bg-blue">
             <CardHeader>
             </CardHeader>
             <CardFooter>
@@ -383,9 +408,11 @@ export default function Home() {
           </Card>
           <Card>
             <p className='p-4'>Total Income</p>
-            <hr/>
+            <hr />
             <CardHeader>
-              <CardTitle>1200000</CardTitle>
+              <CardTitle>
+                {totalIncome}
+              </CardTitle>
               <CardDescription>Your Income Amount</CardDescription>
             </CardHeader>
             <CardFooter>
@@ -393,10 +420,10 @@ export default function Home() {
             </CardFooter>
           </Card>
           <Card>
-            <p className='p-4'>Total Expenses</p>
-            <hr/>
+            <p className='p-4'>Total Expense</p>
+            <hr />
             <CardHeader>
-              <CardTitle>1200000</CardTitle>
+              <CardTitle>-{totalExpense}</CardTitle>
               <CardDescription>Your Expense Amount</CardDescription>
             </CardHeader>
             <CardFooter>
@@ -405,8 +432,10 @@ export default function Home() {
           </Card>
 
         </div>
+        <ChartPie/>
 
       </div>
+
     </main>
   );
 }

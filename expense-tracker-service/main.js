@@ -3,6 +3,7 @@ const app = startApp()
 const { getCategories, createNewCategory, getOneCategories,
   updateCategories, deleteCategories, getTransaction, createNewTransaction,
   updateTransaction, deleteTransaction, getOneTransaction, getTransactionFiltered, getTransactionFilteredByType, getTransactionFilteredBy2 } = require("./services/categoryService")
+const {getTotalIncome, getTotalExpense}=require("./services/transactionService")
 
 app.get("/categories", async (req, res) => {
   const categories = await getCategories()
@@ -87,6 +88,16 @@ app.delete("/transaction/:id", async (req, res) => {
   const { id } = req.params
   await deleteTransaction(id)
   res.sendStatus(204)
+})
+
+app.get("/totalIncome", async (req, res) => {
+  const totalIncome = await getTotalIncome()
+  res.json(totalIncome)
+})
+
+app.get("/totalExpense", async (req, res) => {
+  const totalExpense = await getTotalExpense()
+  res.json(totalExpense)
 })
 
 
