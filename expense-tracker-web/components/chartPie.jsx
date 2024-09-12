@@ -22,6 +22,7 @@ import {
 export const description = "A donut chart with text"
 
 const fillColors = [
+  { fill: "red" },
   { fill: "var(--color-chrome)" },
   { fill: "var(--color-safari)" },
   {  fill: "var(--color-firefox)" },
@@ -55,22 +56,43 @@ const chartConfig = {
   },
 } 
 
+// const chartData1 = [
+//   { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
+//   { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
+//   { browser: "firefox", visitors: 287, fill: "var(--color-firefox)" },
+//   { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
+//   { browser: "other", visitors: 190, fill: "var(--color-other)" },
+// ]
+
 
 export function ChartPie() {
-  const[chartData, setChartData]=React.useState([])
+  const[groupedCategories, setGroupedCategories]=React.useState([])
+
+ const chartData = groupedCategories.map((cat,index) => {
+  return {
+    browser: cat.name,
+    visitors: Number(cat.sum),
+    fill: fillColors[index % fillColors.length].fill 
+  }
+ })
+
   const totalVisitors = React.useMemo(() => {
     return chartData.reduce((acc, curr) => acc + curr.visitors, 0)
   }, [])
 
+
+
   function loadSumByCategories() {
     fetch("http://localhost:4000/sumByCategories")
       .then(res => res.json())
-      .then((data) => { setChartData(data) }
+      .then((data) => { setGroupedCategories(data) }
     )
   }
   React.useEffect(() => {
     loadSumByCategories()
   }, [])
+
+  console.log({groupedCategories, chartData})
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">

@@ -44,7 +44,7 @@ import { Header } from "@/components/header";
 import { RecordDialog } from "@/components/recordDialog";
 import { Checkbox } from "@/components/ui/checkbox"
 import { useSearchParams, useRouter } from 'next/navigation'
-import { ChartPie } from '@/components/chartPIe';
+import { ChartPie } from '@/components/chartPie';
 
 const categoryIcons = [
   { name: "transportation", Icon: Bus },
