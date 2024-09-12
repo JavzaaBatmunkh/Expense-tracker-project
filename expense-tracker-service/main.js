@@ -3,7 +3,7 @@ const app = startApp()
 const { getCategories, createNewCategory, getOneCategories,
   updateCategories, deleteCategories, getTransaction, createNewTransaction,
   updateTransaction, deleteTransaction, getOneTransaction, getTransactionFiltered, getTransactionFilteredByType, getTransactionFilteredBy2 } = require("./services/categoryService")
-const {getTotalIncome, getTotalExpense}=require("./services/transactionService")
+const {getTotalIncome, getTotalExpense, getSumByCategories}=require("./services/transactionService")
 
 app.get("/categories", async (req, res) => {
   const categories = await getCategories()
@@ -98,6 +98,11 @@ app.get("/totalIncome", async (req, res) => {
 app.get("/totalExpense", async (req, res) => {
   const totalExpense = await getTotalExpense()
   res.json(totalExpense)
+})
+
+app.get("/sumByCategories", async (req, res) => {
+  const list = await getSumByCategories()
+  res.json(list)
 })
 
 
