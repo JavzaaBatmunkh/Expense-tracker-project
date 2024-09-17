@@ -270,7 +270,7 @@ export default function Home() {
 
   return (
     <main>
-      <div className="flex gap-10  bg-slate-200 w-full px-[5%] py-8 hidden">
+      <div className="flex gap-10  bg-slate-200 w-full px-[5%] py-8">
         <RecordDialog onComplete={loadTransactions} />
         <Toaster richColors />
         <Card className="bg-slate-100">
